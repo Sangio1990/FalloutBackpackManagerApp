@@ -35,7 +35,7 @@ import fallout.inventory.manager.data.Item
 import pipBoyTextFieldColors
 
 @Composable
-fun NewItemScreen(navHostController: NavHostController, isAmmo: Boolean = true) {
+fun NewItemScreen(navHostController: NavHostController, isItem: Boolean = true) {
     val activity = (LocalContext.current as? Activity)
 
     Column(
@@ -44,7 +44,7 @@ fun NewItemScreen(navHostController: NavHostController, isAmmo: Boolean = true) 
             .fillMaxWidth()
     ) {
         Text(
-            text = if (isAmmo) "NUOVO OGGETTO" else "NUOVA MUNIZIONE",
+            text = if (isItem) "NUOVO OGGETTO" else "NUOVA MUNIZIONE",
             modifier = Modifier
                 .weight(1f)
                 .align(Alignment.CenterHorizontally),
@@ -56,7 +56,7 @@ fun NewItemScreen(navHostController: NavHostController, isAmmo: Boolean = true) 
         OutlinedTextField(
             value = name,
             onValueChange = { name = it },
-            label = { Text(if (isAmmo) "Nome dell'oggetto" else "Calibro") },
+            label = { Text(if (isItem) "Nome dell'oggetto" else "Calibro") },
             placeholder = { Text("") },
             modifier = Modifier
                 .weight(2f)
@@ -96,7 +96,7 @@ fun NewItemScreen(navHostController: NavHostController, isAmmo: Boolean = true) 
         )
 
         var weight by remember { mutableStateOf("") }
-        if (isAmmo) {
+        if (isItem) {
             OutlinedTextField(
                 value = weight,
                 onValueChange = { weight = it },
@@ -137,10 +137,10 @@ fun NewItemScreen(navHostController: NavHostController, isAmmo: Boolean = true) 
                 .fillMaxWidth()
                 .border(2.dp, color = PipBoyGreen, shape = CircleShape),
             onClick = {
-                if (name.isNullOrEmpty() || quantity.isNullOrEmpty() || weight.isNullOrEmpty()) {
+                if (name.isNullOrEmpty() || quantity.isNullOrEmpty() || weight.isNullOrEmpty() || value.isNullOrEmpty()) {
                     Toast.makeText(
                         activity?.baseContext,
-                        "Nome, quantità e peso sono obbligatori",
+                        "Nome, quantità, valore e peso sono obbligatori",
                         Toast.LENGTH_SHORT
                     ).show()
                 } else {
@@ -150,13 +150,22 @@ fun NewItemScreen(navHostController: NavHostController, isAmmo: Boolean = true) 
                             val wgt = weight.toDouble()
                             try {
                                 val vle = value.toInt()
-                                val newItem = Item(name, description, qta, wgt, vle)
-                                if (isAmmo) {
-                                    DataUtility.addItem(newItem)
+                                if (qta < 0 || vle < 0 || wgt < 0) {
+                                    Log.e(TAG, "Negative value")
+                                    Toast.makeText(
+                                        activity?.baseContext,
+                                        "Tutti i valori numerici devono essere positivi",
+                                        Toast.LENGTH_SHORT
+                                    ).show()
                                 } else {
-                                    DataUtility.addNewAmmo(newItem)
+                                    val newItem = Item(name, description, qta, wgt, vle)
+                                    if (isItem) {
+                                        DataUtility.addItem(newItem)
+                                    } else {
+                                        DataUtility.addNewAmmo(newItem)
+                                    }
+                                    navHostController.popBackStack()
                                 }
-                                navHostController.popBackStack()
                             } catch (e: Exception) {
                                 Log.e(TAG, "Failed to convert value, " + e.message)
                                 Toast.makeText(
@@ -184,7 +193,7 @@ fun NewItemScreen(navHostController: NavHostController, isAmmo: Boolean = true) 
                 }
             }
         ) {
-            Text("Aggiungi Oggetto")
+            Text(if (isItem) "Aggiungi Oggetto" else "Aggiungi Munizione")
         }
     }
 }
