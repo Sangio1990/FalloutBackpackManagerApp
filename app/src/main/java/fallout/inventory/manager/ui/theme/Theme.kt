@@ -15,7 +15,9 @@ val Monofonto = FontFamily(
 
 // Definiamo i colori del Pip-Boy
 val PipBoyGreen = Color(0xFF00FF00)
+val PipBoyGreenDark = Color(0xFF007700)
 val PipBoyBlack = Color(0xFF000000)
+val PipBoyBlacklight = Color(0xFF181818)
 
 val PipBoyColors = darkColorScheme(
     primary = PipBoyBlack,
@@ -31,7 +33,9 @@ val PipBoyColors = darkColorScheme(
     surface = PipBoyBlack,
     onSurface = PipBoyGreen,
     error = Color(0xFFCF6679),
-    onError = PipBoyBlack
+    onError = PipBoyBlack,
+    scrim = Color.Red,
+
 )
 
 val PipBoyTypography = Typography(
@@ -39,7 +43,7 @@ val PipBoyTypography = Typography(
         fontFamily = Monofonto,
         fontWeight = FontWeight.Normal,
         fontSize = 16.sp,
-        color = PipBoyGreen // Colore del testo
+        color = PipBoyGreen
     )
 )
 
@@ -53,3 +57,16 @@ fun PipBoyTheme(
         content = content
     )
 }
+
+@Composable
+fun pipBoyTextFieldColors() = OutlinedTextFieldDefaults.colors(
+    focusedTextColor = PipBoyGreen,
+    unfocusedTextColor = PipBoyGreenDark,
+    unfocusedLabelColor = PipBoyGreenDark,
+    focusedLabelColor = PipBoyGreen,
+    focusedContainerColor = PipBoyBlack,
+    unfocusedContainerColor = PipBoyBlack,
+    cursorColor = PipBoyGreen,
+    focusedBorderColor = PipBoyGreen,
+    unfocusedBorderColor = PipBoyGreenDark
+)

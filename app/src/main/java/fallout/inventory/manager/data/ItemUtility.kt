@@ -1,6 +1,6 @@
 package fallout.inventory.manager.data
 
-class ItemParser {
+class ItemUtility {
 
 }
 
@@ -10,5 +10,6 @@ class ListTestData{
         for (i in 0..10)
             mockList.add(Item("Item con un nome molto lungo per testare il comportamento ${i}", "Description ${i}", i, i*0.5, i*10))
         return mockList
+        //return mutableListOf<Item>()
     }
 }

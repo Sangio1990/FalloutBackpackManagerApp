@@ -15,9 +15,19 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Menu
-import androidx.compose.material3.*
+import androidx.compose.material3.Button
+import androidx.compose.material3.CenterAlignedTopAppBar
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MaterialTheme.colorScheme
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -35,16 +45,30 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import fallout.inventory.manager.data.Data
+import fallout.inventory.manager.data.DataUtility
+import fallout.inventory.manager.data.GsonUtility
 import fallout.inventory.manager.screen.AmmoScreen
 import fallout.inventory.manager.screen.InventoryScreen
+import fallout.inventory.manager.screen.NewAmmoScreen
+import fallout.inventory.manager.screen.NewItemScreen
+import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
 
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        GsonUtility.gsonInit(applicationContext)
+        try {
+            DataUtility.dataInit()
+        } catch (e: Exception) {
+            Toast.makeText(applicationContext, "Errore nel recuperare i dati", Toast.LENGTH_LONG).show()
+            finish()
+        }
         setContent {
             MyApp()
         }
@@ -52,18 +76,22 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun MyApp() {
+fun MyApp(fake: Boolean = false, startingDestination: String = "inventory") {
+
     val navController = rememberNavController()
+    DataUtility.setSelectedView(startingDestination)
+
     PipBoyTheme {
         Scaffold(
-            topBar = { TopBar() },
+            topBar = { TopBar(navController) },
             bottomBar = { BottomNavigationBar(navController) }
         ) { innerPadding ->
-            Navigation(navController, innerPadding)
+            Navigation(navController, innerPadding, fake = fake, startingDestination = startingDestination)
         }
     }
 }
 
+@OptIn(DelicateCoroutinesApi::class)
 @Composable
 fun BackBehavior() {
     var doubleBackToExitPressedOnce = false
@@ -141,16 +169,19 @@ fun BottomNavigationBar(navController: NavHostController) {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TopBar() {
-    val activity = (LocalContext.current as? Activity)
+fun TopBar(navController: NavHostController) {
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(rememberTopAppBarState())
     CenterAlignedTopAppBar(
         navigationIcon = {
+            //Add Button
             Button(
                 modifier = Modifier.border(width = 2.dp, color = PipBoyGreen, shape = CircleShape),
                 onClick = {
-                    Toast.makeText(activity?.baseContext, "Aggiunto Oggetto", Toast.LENGTH_SHORT)
-                        .show()
+                    if (DataUtility.getSelectedView().equals("inventory")){
+                    navController.navigate("newItem")}
+                    else if (DataUtility.getSelectedView().equals("ammo")) {
+                        navController.navigate("newAmmo")
+                    }
                 }) {
                 Icon(Icons.Filled.Add, "Add Item", tint = colorScheme.secondary)
             }
@@ -161,11 +192,12 @@ fun TopBar() {
         ),
         title = {
             Text(
-                "Genstione Inventario",
+                "Gestione Inventario",
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )
         },
+        //Hamburger Menù
         actions = {
             IconButton(onClick = { /* do something */ }) {
                 Icon(
@@ -181,19 +213,34 @@ fun TopBar() {
 }
 
 @Composable
-fun Navigation(navController: NavHostController, innerPadding: PaddingValues) {
+fun Navigation(
+    navController: NavHostController,
+    innerPadding: PaddingValues,
+    fake: Boolean = false,
+    startingDestination: String
+) {
     NavHost(
         navController,
-        startDestination = "inventory",
+        startDestination = startingDestination,
         modifier = Modifier.padding(innerPadding)
     ) {
         composable("inventory") {
+            DataUtility.setSelectedView("inventory")
             BackBehavior()
-            InventoryScreen()
+            InventoryScreen(fake = fake)
         }
         composable("ammo") {
+            DataUtility.setSelectedView("ammo")
             BackBehavior()
             AmmoScreen()
+        }
+        composable("newItem"){
+            DataUtility.setSelectedView("newItem")
+            NewItemScreen(navController)
+        }
+        composable("newAmmo"){
+            DataUtility.setSelectedView("newAmmo")
+            NewAmmoScreen()
         }
     }
 }
@@ -202,5 +249,6 @@ fun Navigation(navController: NavHostController, innerPadding: PaddingValues) {
 @Preview
 @Composable
 fun DefaultPreview() {
-    MyApp()
+    DataUtility.data = Data(5, 10, mutableListOf(), mutableListOf())
+    MyApp(fake = true, startingDestination = "inventory")
 }
