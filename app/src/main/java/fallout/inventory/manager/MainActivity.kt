@@ -15,6 +15,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Button
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -49,8 +50,9 @@ import fallout.inventory.manager.data.Data
 import fallout.inventory.manager.data.DataUtility
 import fallout.inventory.manager.data.GsonUtility
 import fallout.inventory.manager.screen.AmmoScreen
+import fallout.inventory.manager.screen.ExtraScreen
 import fallout.inventory.manager.screen.InventoryScreen
-import fallout.inventory.manager.screen.NewAmmoScreen
+import fallout.inventory.manager.screen.ModifyItemScreen
 import fallout.inventory.manager.screen.NewItemScreen
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
@@ -197,12 +199,12 @@ fun TopBar(navController: NavHostController) {
                 overflow = TextOverflow.Ellipsis
             )
         },
-        //Hamburger Menù
+
         actions = {
-            IconButton(onClick = { /* do something */ }) {
+            IconButton(onClick = { navController.navigate("extra") }) {
                 Icon(
-                    imageVector = Icons.Filled.Menu,
-                    contentDescription = "Localized description",
+                    imageVector = Icons.Filled.Settings,
+                    contentDescription = "Extra Things",
                     tint = colorScheme.secondary
                 )
             }
@@ -227,20 +229,28 @@ fun Navigation(
         composable("inventory") {
             DataUtility.setSelectedView("inventory")
             BackBehavior()
-            InventoryScreen(fake = fake)
+            InventoryScreen(fake = fake, navController)
         }
         composable("ammo") {
             DataUtility.setSelectedView("ammo")
             BackBehavior()
-            AmmoScreen()
+            AmmoScreen(fake = fake, navController)
         }
         composable("newItem"){
             DataUtility.setSelectedView("newItem")
-            NewItemScreen(navController)
+            NewItemScreen(navController, true)
         }
         composable("newAmmo"){
             DataUtility.setSelectedView("newAmmo")
-            NewAmmoScreen()
+            NewItemScreen(navController, false)
+        }
+        composable("modifyItem"){
+            DataUtility.setSelectedView("modifyItem")
+            ModifyItemScreen(navController)
+        }
+        composable("extra") {
+            DataUtility.setSelectedView("extra")
+            ExtraScreen()
         }
     }
 }

@@ -2,22 +2,23 @@ package fallout.inventory.manager.data
 
 object DataUtility {
     val TAG = "FalloutManger"
-    lateinit private var selectedView : String
+    lateinit private var selectedView: String
     lateinit var data: Data
 
-    fun dataInit(){
+    fun dataInit() {
         val temp = GsonUtility.loadData()
-        if(temp != null){
+        if (temp != null) {
             data = temp
         }
     }
 
     fun getSelectedView(): String = selectedView
 
-    fun setSelectedView(view: String){
+    fun setSelectedView(view: String) {
         selectedView = view
     }
-    fun saveData(){
+
+    fun saveData() {
         GsonUtility.saveData(data)
     }
 
@@ -30,29 +31,39 @@ object DataUtility {
     }
 
     fun getSTR(): Int {
-        return data.strong
+        return data.strength
+    }
+
+    fun setStrength(str: Int) {
+        data.strength = str
+        saveData()
     }
 
     fun getModifier(): Int {
         return data.modifier
     }
 
-    fun addItem(item: Item){
+    fun setModifier(mod: Int) {
+        data.modifier = mod
+        saveData()
+    }
+
+    fun addItem(item: Item) {
         data.inventory.add(item)
         saveData()
     }
 
-    fun addAmmo(item: Item){
+    fun addNewAmmo(item: Item) {
         data.ammo.add(item)
         saveData()
     }
 
-    fun removeItem(item: Item){
+    fun removeItem(item: Item) {
         data.inventory.remove(item)
         saveData()
     }
 
-    fun removeAmmo(item: Item){
+    fun removeAmmo(item: Item) {
         data.ammo.remove(item)
         saveData()
     }
@@ -60,11 +71,19 @@ object DataUtility {
     fun getTotalWeight(): Double {
         var totalWeight = 0.0
         for (item in data.inventory)
-            totalWeight += item.weight*item.quantity
+            totalWeight += item.weight * item.quantity
         return totalWeight
     }
 
     fun getMaxWeight(): Int {
-        return data.strong*5+75+data.modifier
+        return data.strength * 5 + 75 + data.modifier
+    }
+
+    fun changeAmmoQuantity(itemaa: Item, qnt: Int) {
+        data.ammo.find { itemaa.name == it.name }
+            ?.let {
+                it.quantity += qnt
+            }
+        saveData()
     }
 }

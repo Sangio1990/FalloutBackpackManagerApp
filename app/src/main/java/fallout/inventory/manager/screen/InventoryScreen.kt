@@ -2,8 +2,9 @@ package fallout.inventory.manager.screen
 
 import PipBoyBlack
 import PipBoyBlacklight
-import android.app.Activity
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -13,28 +14,25 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.paint
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavHostController
 import fallout.inventory.manager.MyApp
 import fallout.inventory.manager.data.Data
 import fallout.inventory.manager.data.DataUtility
-import fallout.inventory.manager.data.GsonUtility
 import fallout.inventory.manager.data.Item
+import fallout.inventory.manager.data.ItemViewModel
 import fallout.inventory.manager.data.ListTestData
 
 @Composable
-fun InventoryScreen(fake: Boolean = false) {
-    val activity = (LocalContext.current as? Activity)
+fun InventoryScreen(fake: Boolean = false, navController: NavHostController) {
     Scaffold(
     ) { innerPadding ->
         Box(
@@ -43,7 +41,7 @@ fun InventoryScreen(fake: Boolean = false) {
         ) {
             var data: List<Item>
             if (fake) {
-                data = ListTestData().fakeData()
+                data = ListTestData().fakeItemData()
             } else {
                 data = DataUtility.loadItems()
             }
@@ -116,7 +114,7 @@ fun InventoryScreen(fake: Boolean = false) {
                             textAlign = TextAlign.End
                         )
                     }
-                    ItemList(data)
+                    ItemList(data, navController = navController)
 
                 }
             }
@@ -133,7 +131,11 @@ fun ItemCard(item: Item, modifier: Modifier = Modifier) {
             .fillMaxWidth()
             .padding(8.dp)
     ) {
-        Row(modifier = Modifier.background(PipBoyBlacklight).padding(5.dp)) {
+        Row(
+            modifier = Modifier
+                .background(PipBoyBlacklight)
+                .padding(5.dp)
+        ) {
             Text(text = item.name, modifier = Modifier.weight(3f))
             Text(
                 text = item.value.toString(),
@@ -159,13 +161,31 @@ fun ItemCard(item: Item, modifier: Modifier = Modifier) {
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun ItemList(itemList: List<Item>, modifier: Modifier = Modifier) {
-    LazyColumn(modifier = modifier.fillMaxWidth().background(Color.White)) {
+fun ItemList(
+    itemList: List<Item>,
+    modifier: Modifier = Modifier,
+    navController: NavHostController
+) {
+    LazyColumn(
+        modifier = modifier
+            .fillMaxWidth()
+            .background(Color.White)
+    ) {
         items(itemList.size) { item ->
             ItemCard(
                 item = itemList[item],
-                modifier = Modifier.background(PipBoyBlacklight))
+                modifier = Modifier
+                    .background(PipBoyBlacklight)
+                    .combinedClickable(
+                        onClick = {},
+                        onLongClick = {
+                            ItemViewModel.selectedItem = itemList[item]
+                            ItemViewModel.isItem = true
+                            navController.navigate("modifyItem")
+                        })
+            )
         }
     }
 }

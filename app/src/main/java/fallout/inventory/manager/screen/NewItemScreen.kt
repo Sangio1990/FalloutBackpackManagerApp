@@ -5,9 +5,7 @@ import android.app.Activity
 import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.border
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -37,7 +35,7 @@ import fallout.inventory.manager.data.Item
 import pipBoyTextFieldColors
 
 @Composable
-fun NewItemScreen(navHostController: NavHostController) {
+fun NewItemScreen(navHostController: NavHostController, isAmmo: Boolean = true) {
     val activity = (LocalContext.current as? Activity)
 
     Column(
@@ -46,7 +44,7 @@ fun NewItemScreen(navHostController: NavHostController) {
             .fillMaxWidth()
     ) {
         Text(
-            text = "NUOVO OGGETTO",
+            text = if (isAmmo) "NUOVO OGGETTO" else "NUOVA MUNIZIONE",
             modifier = Modifier
                 .weight(1f)
                 .align(Alignment.CenterHorizontally),
@@ -58,7 +56,7 @@ fun NewItemScreen(navHostController: NavHostController) {
         OutlinedTextField(
             value = name,
             onValueChange = { name = it },
-            label = { Text("Nome dell'oggetto") },
+            label = { Text(if (isAmmo) "Nome dell'oggetto" else "Calibro") },
             placeholder = { Text("") },
             modifier = Modifier
                 .weight(2f)
@@ -98,19 +96,23 @@ fun NewItemScreen(navHostController: NavHostController) {
         )
 
         var weight by remember { mutableStateOf("") }
-        OutlinedTextField(
-            value = weight,
-            onValueChange = { weight = it },
-            label = { Text("Peso") },
-            placeholder = { Text("") },
-            modifier = Modifier
-                .weight(2f)
-                .fillMaxWidth()
-                .padding(5.dp),
-            colors = pipBoyTextFieldColors(),
-            singleLine = true,
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-        )
+        if (isAmmo) {
+            OutlinedTextField(
+                value = weight,
+                onValueChange = { weight = it },
+                label = { Text("Peso") },
+                placeholder = { Text("") },
+                modifier = Modifier
+                    .weight(2f)
+                    .fillMaxWidth()
+                    .padding(5.dp),
+                colors = pipBoyTextFieldColors(),
+                singleLine = true,
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+            )
+        } else {
+            weight = 0.0.toString()
+        }
 
         var description by remember { mutableStateOf("") }
         OutlinedTextField(
@@ -128,14 +130,7 @@ fun NewItemScreen(navHostController: NavHostController) {
             minLines = 5
         )
 
-        Row(
-            modifier = Modifier
-                .padding(all = 8.dp)
-                .weight(1f),
-            horizontalArrangement = Arrangement.Center
-        ) {
 
-        }
 
         Button(
             modifier = Modifier
@@ -156,7 +151,11 @@ fun NewItemScreen(navHostController: NavHostController) {
                             try {
                                 val vle = value.toInt()
                                 val newItem = Item(name, description, qta, wgt, vle)
-                                DataUtility.addItem(newItem)
+                                if (isAmmo) {
+                                    DataUtility.addItem(newItem)
+                                } else {
+                                    DataUtility.addNewAmmo(newItem)
+                                }
                                 navHostController.popBackStack()
                             } catch (e: Exception) {
                                 Log.e(TAG, "Failed to convert value, " + e.message)
